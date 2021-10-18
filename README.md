@@ -11,7 +11,9 @@ Each subdirectory contains some code that needs refactoring.
 ## `time/timestamp.py`
 
 Refactor timestamp.py.  2 or 3 refactorings are possible.
-
+1. Rename method to create_time_from_timestamp
+2. Extract method is_valid_time
+3. Rewrite the condition from else to elif
 
 ## `game_framework/gamelib.py`
 
@@ -21,6 +23,10 @@ Look for refactorings in the class `GameApp`.
 
 * Encapsulate a collection - provide behavior that subclasses of GameApp need instead of requiring them to manipulate a collection that belongs to the GameApp class.
   - Hint: `elements`
+1. Create `add_element()` and `remove_element()` method
+2. Create global variable for some parameters
+3. Now  `create_canvas()` return the object and set the canvas attribute in the `__init__` instead
+
 
 ## `recipe/recipe.py` and `recipe/main.py`
 

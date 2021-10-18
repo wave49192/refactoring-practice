@@ -1,22 +1,18 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
-TIMER_DELAY = 33
-
-CANVAS_HEIGHT = 500
-
 CANVAS_WIDTH = 800
+CANVAS_HEIGHT = 500
+TIMER_DELAY = 33
 
 
 class GameCanvasElement():
     """Base class for an element on the game canvas, with attributes:
-
     x = x-coordinate of object's image
     y = y-coordinate of object's image
     canvas = reference to the game canvas
     canvas_object_id = id of the object, used to manipulate it using canvas
     is_visible = boolean flag if element is visible.
-
     By default the (x,y) coordinate are at the center of the image,
     but this can be changed by subclasses or calls to canvas.itemconfigure().
     """
@@ -44,18 +40,17 @@ class GameCanvasElement():
             self.canvas.coords(self.canvas_object_id, self.x, self.y)
 
     def init_canvas_object(self):
-        """A method that a subclass can override to initialize itself AFTER it has been added to the canvas.
+        """A method that a subclass can override to init it self after
+        it has been added to the canvas
         """
         pass
-        self.canvas_object_id = self.canvas.create_image(
-            self.x,
-            self.y,
-            image=tk.PhotoImage(file=self.image_filename))
+
     def init_element(self):
         pass
 
     def update(self):
-        """Update the object to emulate animation."""
+        """Update the object to emulate animation.
+        """
         pass
 
 
@@ -91,12 +86,14 @@ class Sprite(GameCanvasElement):
 class GameApp(ttk.Frame):
     """Base class for a game.  This class creates a canvas, manages
     a collection of game elements, and controls animation.
-
     It provides several call-back methods for initializing elements
     on the canvas, start/stop animation, and running the animation loop.
     """
 
-    def __init__(self, parent, canvas_width=CANVAS_WIDTH, canvas_height=CANVAS_HEIGHT, update_delay=TIMER_DELAY):
+    def __init__(self, parent,
+                 canvas_width=CANVAS_WIDTH,
+                 canvas_height=CANVAS_HEIGHT,
+                 update_delay=TIMER_DELAY):
         super().__init__(parent)
         self.parent = parent
 
@@ -105,51 +102,51 @@ class GameApp(ttk.Frame):
 
         self.update_delay = update_delay
 
-        self.grid(sticky="news")
-        self.create_canvas()
+        self.grid(sticky=tk.NSEW)
+        self.canvas = self.create_canvas(canvas_width, canvas_height)
 
-        self.elements = []
+        self._elements = []
         self.init_game()
 
         self.parent.bind('<KeyPress>', self.on_key_pressed)
         self.parent.bind('<KeyRelease>', self.on_key_released)
 
-    # refactor - replace side effect with return value
-    # refactor - add parameters instead of accessing
     def create_canvas(self, width, height):
-        canvas = tk.Canvas(self, borderwidth=0, width=width, height=height,
+        canvas = tk.Canvas(self, borderwidth=0,
+                           width=width, height=height,
                            highlightthickness=0)
-        canvas.grid(sticky="news")
+        canvas.grid(sticky=tk.NSEW)
         return canvas
 
     def animate(self):
         self.pre_update()
 
-        for element in self.elements:
+        for element in self._elements:
             element.update()
             element.render()
 
         self.post_update()
-        # schedule the next call to this method
+
         self.after(self.update_delay, self.animate)
+
+    def add_element(self, element: GameCanvasElement):
+        """Add an element to the Game.
+        Args:
+            element (GameCanvasElement): The element you want to add.
+        """
+        self._elements.append(element)
+
+    def remove_element(self, element: GameCanvasElement):
+        """Remove the element from the Game
+        Args:
+            element (GameCanvasElement): [description]
+        """
+        if element in self._elements:
+            self._elements.remove(element)
+            self.canvas.delete(element.canvas_object_id)
 
     def start(self):
         self.after(0, self.animate)
-
-    # Hook method
-    # "Callbacks"
-    def init_game(self):
-        pass
-    def add_element(self, element: GameCanvasElement):
-        """Add an element to the game."""
-        self.elements.append(element)
-
-    def remove_element(self, element: GameCanvasElement):
-        """Remove an element from the game."""
-        if element in self.elements:
-            self.elements.remove(element)
-            # remove from the canvas, too
-            self.canvas.delete(element.canvas_object_id)
 
     def init_game(self):
         pass
